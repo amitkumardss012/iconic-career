@@ -2,6 +2,7 @@
   "name": "client",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.11.1",
   "imports": {
     "#/*": "./src/*"
   },
@@ -15,7 +16,7 @@
     "check": "prettier --check .",
     "seed:admin": "npx tsx seed/admin.ts",
     "seed:student": "npx tsx seed/student.ts",
-    "postinstall": "npx prisma generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1136.0",

@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: iconic-career
+
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      NODE_ENV: PRODUCTION
+      PORT: 3000
+      HOST: 0.0.0.0
+
+      DATABASE_URL: "postgresql://neondb_owner:npg_CsDfKMj3Boq1@ep-rapid-fog-azta5tph-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+      JWT_SECRET: "123456"
+
+      CLOUD_NAME: "dv5yymidd"
+      CLOUD_API_KEY: "891729624222638"
+      CLOUD_API_SECRET: "h9RcYUM1S5335c7Gz57sZK3QuNI"
+      CLOUD_FOLDER: "iconic-career"
+
+      RAZORPAY_KEY_ID: "rzp_test_TMNMfDEWDsaEpL"
+      RAZORPAY_KEY_SECRET: "DtzF4Z4r1GUcrpZqdYyWzce9"

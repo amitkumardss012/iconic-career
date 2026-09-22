@@ -40,17 +40,33 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
-function RootComponent() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const isPortal = pathname.startsWith("/admin") || pathname.startsWith("/student")
+// function RootComponent() {
+//   const pathname = useRouterState({ select: (s) => s.location.pathname })
+//   const isPortal = pathname.startsWith("/admin") || pathname.startsWith("/student")
 
+//   return (
+//     <RootDocument>
+//       {!isPortal && <Navbar />}
+//       <main className={isPortal ? "min-h-screen flex flex-col bg-[#f8fafc]" : "flex-1 flex flex-col pt-17"}>
+//         <Outlet />
+//       </main>
+//       {!isPortal && <Footer />}
+//       <Toaster position="bottom-right" richColors />
+//     </RootDocument>
+//   )
+// }
+
+function RootComponent() {
   return (
     <RootDocument>
-      {!isPortal && <Navbar />}
-      <main className={isPortal ? "min-h-screen flex flex-col bg-[#f8fafc]" : "flex-1 flex flex-col pt-17"}>
+      <Navbar />
+
+      <main className="flex-1 flex flex-col pt-17">
         <Outlet />
       </main>
-      {!isPortal && <Footer />}
+
+      <Footer />
+
       <Toaster position="bottom-right" richColors />
     </RootDocument>
   )

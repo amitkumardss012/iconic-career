@@ -1,0 +1,400 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETED
+  SUSPENDED
+}
+
+enum EnrollmentStatus {
+  PENDING       // Enrollment initialized, pending verification/payment
+  ACTIVE        // Currently active and in progress
+  EXTENDED      // Active with an approved internship period extension
+  PAUSED        // Temporarily on hold (e.g. academic exams, medical)
+  COMPLETED     // Successfully completed milestones & curriculum
+  CANCELLED     // Discontinued or cancelled
+  EXPIRED       // Deadline passed without completion or extension
+}
+
+enum EnrollmentSource {
+  STUDENT_SELF   // Enrolled by student via public catalog/portal
+  ADMIN_MANUAL   // Enrolled manually by an admin from Admin Panel
+  SYSTEM_IMPORT  // Bulk cohort import or institutional partner allocation
+}
+
+enum EnrollmentPaymentStatus {
+  FREE           // Free program or institutional sponsorship
+  PAID           // Fully paid
+  PARTIALLY_PAID // Partial installment paid
+  WAIVED         // Fee waived by admin / scholarship
+  PENDING        // Awaiting transaction settlement
+}
+
+enum PaymentGateway {
+  MANUAL_ADMIN      // Cash, Bank Transfer, Cheque, In-Person UPI
+  RAZORPAY          // Razorpay Checkout / Webhooks
+  STRIPE            // Stripe
+  CASHFREE          // Cashfree
+  INSTAMOJO         // Instamojo
+}
+
+enum PaymentMethod {
+  UPI               // Google Pay, PhonePe, Paytm, BHIM
+  NET_BANKING       // NEFT / RTGS / IMPS
+  CREDIT_CARD       // Credit Card
+  DEBIT_CARD        // Debit Card
+  BANK_TRANSFER     // Direct Bank Wire
+  CASH              // Physical Cash
+  CHEQUE            // Cheque / Demand Draft
+  WALLET            // Digital Wallet
+  SCHOLARSHIP       // Institutional grant / fee waiver
+  OTHER
+}
+
+enum TransactionStatus {
+  PENDING           // Order generated or awaiting confirmation
+  SUCCESS           // Payment captured and confirmed
+  FAILED            // Failed at gateway or bounced cheque
+  REFUNDED          // Fully refunded
+  PARTIALLY_REFUNDED // Partially refunded
+  CANCELLED         // Abandoned or cancelled
+}
+
+enum TransactionType {
+  PAYMENT           // Standard fee or installment payment
+  REFUND            // Refund disbursement
+  ADJUSTMENT        // Balance adjustment or fee waiver
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  password String
+  phone    String? @unique
+  role     Role    @default(STUDENT)
+
+  studentProfile           StudentProfile?
+  enrollments              ProgramEnrollment[]  @relation("StudentEnrollments")
+  assignedEnrollments      ProgramEnrollment[]  @relation("AdminAssignedEnrollments")
+  payments                 PaymentTransaction[] @relation("StudentPayments")
+  recordedPayments         PaymentTransaction[] @relation("AdminRecordedPayments")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum DegreeLevel {
+  UG
+  PG
+  DIPLOMA
+  DOCTORATE
+  OTHER
+}
+
+model StudentProfile {
+  id                   Int           @id @default(autoincrement())
+  userId               Int           @unique
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 1. Personal & Demographic Details
+  gender               Gender?
+
+  // 2. Parent / Guardian Details
+  parentName           String?
+  parentPhone          String?
+  parentEmail          String?
+  relationship         String?       // e.g. "Father", "Mother", "Guardian"
+
+  // 3. Academic Credentials
+  university           String?       // University / Board
+  college              String        // College / Institute
+  degreeLevel          DegreeLevel?  @default(UG)
+  department           String?       // e.g. "BA", "BSC", "BCOM", "BTECH", "BCA", "BBA", "MCA", "MBA"
+  course               String        // Program Name e.g. "Computer Science & Engineering"
+  subject              String?       // Core Specialization / Major
+  session              String?       // Academic Session (e.g. "2024-2028")
+  registrationNumber   String?       // University / College Enrollment No
+
+  // 4. Compliance & Consent
+  consentLetter        Json?         // Structured Document JSON { id, url, bytes, format, provider, fileName }
+
+  // 5. Status & Geographical Location
+  status               StudentStatus @default(ACTIVE)
+  isActive             Boolean       @default(true)
+  city                 String?
+  state                String?
+  emergencyContact     String?
+  notes                String?       @db.Text
+
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([university])
+  @@index([college])
+  @@index([department])
+  @@index([registrationNumber])
+  @@map("student_profiles")
+}
+
+enum ProgramType {
+  COURSE
+  INTERNSHIP
+}
+
+enum ProgramStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum ProgramLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+enum DeliveryMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+model ProgramCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  slug        String    @unique
+  description String?   @db.Text
+  icon        String?   // e.g. Lucide icon name or image URL
+  thumbnail   Json?     // Structured ImageType JSON { id, url, bytes, format, provider }
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+
+  programs    Program[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("program_categories")
+}
+
+model Program {
+  id                 Int                 @id @default(autoincrement())
+  title              String
+  slug               String              @unique
+  type               ProgramType         @default(COURSE)
+  status             ProgramStatus       @default(DRAFT)
+  level              ProgramLevel        @default(ALL_LEVELS)
+  deliveryMode       DeliveryMode        @default(HYBRID)
+
+  // Category Relation
+  categoryId         Int
+  category           ProgramCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  // Enrollments Relation
+  enrollments        ProgramEnrollment[]
+
+  // Content & Overview
+  shortDescription   String?             @db.Text
+  description        String?             @db.Text
+  highlights         Json?               // JSON array, 100% compatible with MySQL and PostgreSQL
+  learningOutcomes   Json?               // JSON array, 100% compatible with MySQL and PostgreSQL
+  prerequisites      Json?               // JSON array, 100% compatible with MySQL and PostgreSQL
+  tags               Json?               // JSON array, 100% compatible with MySQL and PostgreSQL
+
+  // Media & Storage Assets (Structured ImageType JSON)
+  thumbnail          Json?               // Structured ImageType JSON { id, url, bytes, format, provider }
+  banner             Json?               // Structured ImageType JSON { id, url, bytes, format, provider }
+  syllabusUrl        String?
+
+  // Duration & Scheduling
+  duration           String?             // e.g. "3 Months", "6 Months", "8 Months"
+  durationHours      Int?                // Total learning hours (e.g. 120)
+  startDate          DateTime?           // Optional: Set for batch Courses, null for flexible Internships
+  endDate            DateTime?           // Optional: Set for batch Courses, null for flexible Internships
+
+  // Financials & Enrollment Capacity
+  price              Float               @default(0)
+  discountPrice      Float?
+  currency           String              @default("INR")
+  maxCapacity        Int?
+  enrolledCount      Int                 @default(0)
+
+  // Ratings, Social Proof & Badges
+  rating             Float               @default(0) // e.g. 4.9
+  ratingCount        Int                 @default(0) // e.g. 124 reviews
+  isBestseller       Boolean             @default(false)
+  isFeatured         Boolean             @default(false)
+  isActive           Boolean             @default(true)
+  certificateOffered Boolean             @default(true)
+
+  // Timestamps
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  // Performance Indexes for fast filtering & sorting
+  @@index([type, status])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isBestseller])
+  @@index([isFeatured])
+  @@index([createdAt])
+  @@map("programs")
+}
+
+model ProgramEnrollment {
+  id                   Int                      @id @default(autoincrement())
+  enrollmentNumber     String                   @unique // e.g. "ENR-2026-00892"
+
+  // 1. Relational Links
+  userId               Int
+  user                 User                     @relation("StudentEnrollments", fields: [userId], references: [id], onDelete: Cascade)
+
+  programId            Int
+  program              Program                  @relation(fields: [programId], references: [id], onDelete: Restrict)
+
+  // 2. Enrollment Lifecycle & Source
+  status               EnrollmentStatus         @default(ACTIVE)
+  source               EnrollmentSource         @default(STUDENT_SELF)
+  
+  // Optional: Admin who manually enrolled or modified this student
+  adminAssignedById    Int?
+  adminAssignedBy      User?                    @relation("AdminAssignedEnrollments", fields: [adminAssignedById], references: [id], onDelete: SetNull)
+
+  // 3. Duration, Scheduling & Internship Extensions
+  durationWeeks        Int?                     // Duration in weeks (e.g. 4, 8, 12, 16, 24)
+  durationMonths       Int?                     // Duration in months (e.g. 1, 2, 3, 6)
+  startDate            DateTime                 @default(now())
+  expectedEndDate      DateTime                 // Initial calculated completion target
+  actualEndDate        DateTime?                // Actual completion or exit date
+
+  // Internship Extension Engine
+  isExtended           Boolean                  @default(false)
+  extendedWeeks        Int                      @default(0) // Cumulative additional weeks
+  extendedUntil        DateTime?                // Current revised end deadline
+  lastExtensionReason  String?                  @db.Text
+  
+  // Extension Audit Trail (Array of { extendedById, extendedAt, addedWeeks, previousEndDate, newEndDate, reason })
+  extensionHistory     Json?
+
+  // 4. Progress, Mentorship & Milestones
+  progressPercent      Float                    @default(0) // 0.0 to 100.0
+  grade                String?                  // e.g. "A+", "A", "Distinction"
+  mentorName           String?
+  mentorEmail          String?
+  certificateIssued    Boolean                  @default(false)
+  certificateId        String?                  // Public QR verifiable certificate ID
+  certificateIssuedAt  DateTime?
+
+  // 5. Financials & Payment Audit
+  paymentStatus        EnrollmentPaymentStatus  @default(FREE)
+  amountPaid           Float                    @default(0)
+  currency             String                   @default("INR")
+  paymentReference     String?                  // Transaction/Receipt ID
+  transactions         PaymentTransaction[]
+
+  // 6. Admin Internal Notes & Metadata
+  adminNotes           String?                  @db.Text
+  metadata             Json?
+
+  // Timestamps
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+
+  // Performance Indexes
+  @@unique([userId, programId])                 // Prevents duplicate active enrollments in the same program
+  @@index([userId])
+  @@index([programId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([startDate, expectedEndDate])
+  @@index([extendedUntil])
+  @@index([createdAt])
+  @@map("program_enrollments")
+}
+
+model PaymentTransaction {
+  id                   Int               @id @default(autoincrement())
+  receiptNumber        String            @unique // e.g. "RCP-2026-000412"
+
+  // 1. Relational Links
+  enrollmentId         Int
+  enrollment           ProgramEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  userId               Int               // Student User ID
+  user                 User              @relation("StudentPayments", fields: [userId], references: [id], onDelete: Cascade)
+
+  // 2. Financial Figures
+  amount               Float             // Transaction amount in INR (e.g. 5000.00)
+  currency             String            @default("INR")
+  type                 TransactionType   @default(PAYMENT)
+  status               TransactionStatus @default(SUCCESS)
+
+  // 3. Payment Mode & Gateway
+  gateway              PaymentGateway    @default(MANUAL_ADMIN)
+  method               PaymentMethod     @default(UPI)
+
+  // 4. Manual / Bank Reference
+  transactionReference String?           // Bank UTR / Cheque No / Cash Receipt Ref
+
+  // 5. Gateway Specific Fields (Razorpay / Stripe Ready)
+  gatewayOrderId       String?           // e.g. order_O123456789
+  gatewayPaymentId     String?           // e.g. pay_P123456789
+  gatewaySignature     String?           // HMAC-SHA256 signature
+  gatewayResponse      Json?             // Raw webhook or API response payload
+
+  // 6. Administrative Audit
+  recordedById         Int?              // Admin who entered or approved this transaction
+  recordedBy           User?             @relation("AdminRecordedPayments", fields: [recordedById], references: [id], onDelete: SetNull)
+  notes                String?           @db.Text
+
+  // 7. Refund Tracking
+  refundAmount         Float?            @default(0)
+  refundReason         String?
+  refundedAt           DateTime?
+
+  // Timestamps
+  paidAt               DateTime          @default(now())
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@index([enrollmentId])
+  @@index([userId])
+  @@index([status])
+  @@index([gateway])
+  @@index([paidAt])
+  @@index([gatewayOrderId])
+  @@index([gatewayPaymentId])
+  @@map("payment_transactions")
+}
+
+

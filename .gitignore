@@ -15,3 +15,8 @@ todos.json
 
 .env
 /generated/prisma
+
+
+dockerfile
+docker-compose.yml
+.dockerignore

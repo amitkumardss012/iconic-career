@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
   }),
   loader: async () => {
     const featuredFaqs = getStaticFeaturedFaqs()
-    const { courses, internships } = await getHomeProgramsFn({ data: {} })
+    const { courses, internships } = await getHomeProgramsFn()
     return { featuredFaqs, courses, internships }
   },
   component: HomePage,

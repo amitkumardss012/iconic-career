@@ -14,7 +14,8 @@
     "format": "prettier --write . && eslint --fix",
     "check": "prettier --check .",
     "seed:admin": "npx tsx seed/admin.ts",
-    "seed:student": "npx tsx seed/student.ts"
+    "seed:student": "npx tsx seed/student.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1136.0",

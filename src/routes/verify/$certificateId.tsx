@@ -37,7 +37,7 @@ function VerifyCertificatePage() {
         aria-hidden="true"
       />
 
-      <div className="container-site relative z-10 max-w-3xl mx-auto flex flex-col gap-8">
+      <div className="container-site relative z-10 max-w-4xl mx-auto flex flex-col gap-8">
         {/* Navigation Breadcrumb */}
         <div>
           <Link

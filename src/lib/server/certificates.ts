@@ -104,3 +104,27 @@ export const deleteCertificateFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     return await deleteCertificate(data.id)
   })
+
+/**
+ * Public server function to verify a certificate by unique number
+ */
+export const verifyCertificatePublicFn = createServerFn({ method: "POST" })
+  .validator((input: unknown) =>
+    z.object({ certificateNumber: z.string().trim().min(1, "Certificate number is required") }).parse(input)
+  )
+  .handler(async ({ data }) => {
+    const { verifyCertificatePublic } = await import("@/lib/services/certificates")
+    return await verifyCertificatePublic(data.certificateNumber)
+  })
+
+/**
+ * Public server function to record a download event for telemetry
+ */
+export const recordCertificateDownloadFn = createServerFn({ method: "POST" })
+  .validator((input: unknown) =>
+    z.object({ certificateNumber: z.string().trim().min(1) }).parse(input)
+  )
+  .handler(async ({ data }) => {
+    const { recordCertificateDownload } = await import("@/lib/services/certificates")
+    return await recordCertificateDownload(data.certificateNumber)
+  })

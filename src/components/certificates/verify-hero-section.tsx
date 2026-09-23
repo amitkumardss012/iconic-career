@@ -74,7 +74,7 @@ export function VerifyHeroSection({
         </div>
 
         {/* Verification Terminal Core */}
-        <div className="mx-auto max-w-2xl mt-10 md:mt-12">
+        <div className="mx-auto max-w-4xl mt-10 md:mt-12">
           <VerificationForm initialId={initialId} autoVerify={autoVerify} />
         </div>
       </div>

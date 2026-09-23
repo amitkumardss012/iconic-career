@@ -575,3 +575,182 @@ export async function getEligibleEnrollments(search?: string) {
     existingCertificateNumber: enr.certificate?.certificateNumber || null,
   }))
 }
+
+export interface PublicVerificationResult {
+  status: "VALID" | "REVOKED" | "SUSPENDED" | "NOT_FOUND" | "INVALID"
+  message: string
+  certificate?: {
+    id: number
+    certificateNumber: string
+    recipientName: string
+    recipientEmail?: string | null
+    college: string
+    department?: string | null
+    degree?: string | null
+    programTitle: string
+    programType: "COURSE" | "INTERNSHIP"
+    durationText: string
+    grade?: string | null
+    percentage?: number | null
+    issueDate: string
+    validUntil?: string | null
+    status: "ISSUED" | "REVOKED" | "SUSPENDED"
+    isDownloadAllowed: boolean
+    mentorName?: string | null
+    fileUrl?: string | null
+    revokedAt?: string | null
+    revocationReason?: string | null
+    downloadCount: number
+    viewCount: number
+    enrollmentNumber: string
+  }
+}
+
+/**
+ * Public Verification Service - Queries live database for public verification and certificate generation
+ */
+export async function verifyCertificatePublic(rawCertificateNumber: string): Promise<PublicVerificationResult> {
+  const certNumber = (rawCertificateNumber || "").trim().toUpperCase()
+
+  if (!certNumber) {
+    return {
+      status: "INVALID",
+      message: "Please enter a valid Certificate Identifier to query the registry.",
+    }
+  }
+
+  if (!prisma.certificate) {
+    return {
+      status: "NOT_FOUND",
+      message: "Credential database is initializing. Please try again in a few moments.",
+    }
+  }
+
+  // Query database
+  const cert = await prisma.certificate.findUnique({
+    where: { certificateNumber: certNumber },
+    include: {
+      user: {
+        include: { studentProfile: true },
+      },
+      program: true,
+      enrollment: true,
+    },
+  })
+
+  if (!cert) {
+    return {
+      status: "NOT_FOUND",
+      message: `No certificate record found for identifier "${certNumber}". Please verify the characters on your document or QR code.`,
+    }
+  }
+
+  // Increment view telemetry asynchronously
+  prisma.certificate
+    .update({
+      where: { id: cert.id },
+      data: {
+        viewCount: { increment: 1 },
+        lastViewedAt: new Date(),
+      },
+    })
+    .catch((err) => console.error("Failed to increment certificate viewCount:", err))
+
+  const snapshot = (cert.snapshotData as any) || {}
+  const recipientName = snapshot.recipientName || cert.user.name || "Student"
+  const college = snapshot.college || cert.user.studentProfile?.college || "College Not Specified"
+  const department = snapshot.department || cert.user.studentProfile?.department || cert.user.studentProfile?.course || ""
+  const degree = snapshot.degree || cert.user.studentProfile?.degreeLevel || "UG"
+  const programTitle = snapshot.programTitle || cert.program.title || "Academic Program"
+  const programType = (snapshot.programType as "COURSE" | "INTERNSHIP") || cert.program.type || "COURSE"
+  const durationText =
+    snapshot.durationText ||
+    cert.durationText ||
+    cert.program.duration ||
+    `${cert.enrollment.durationMonths || 2} Months`
+
+  const formattedIssueDate = new Date(cert.issueDate).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
+
+  const formattedValidUntil = cert.validUntil
+    ? new Date(cert.validUntil).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null
+
+  const certPayload = {
+    id: cert.id,
+    certificateNumber: cert.certificateNumber,
+    recipientName,
+    recipientEmail: snapshot.recipientEmail || cert.user.email,
+    college,
+    department,
+    degree,
+    programTitle,
+    programType,
+    durationText,
+    grade: cert.grade || cert.enrollment.grade || null,
+    percentage: cert.percentage !== null && cert.percentage !== undefined ? Number(cert.percentage) : null,
+    issueDate: formattedIssueDate,
+    validUntil: formattedValidUntil,
+    status: cert.status as "ISSUED" | "REVOKED" | "SUSPENDED",
+    isDownloadAllowed: cert.isDownloadAllowed,
+    mentorName: snapshot.mentorName || cert.enrollment.mentorName || null,
+    fileUrl: cert.fileUrl || null,
+    revokedAt: cert.revokedAt ? new Date(cert.revokedAt).toLocaleDateString() : null,
+    revocationReason: cert.revocationReason || null,
+    downloadCount: cert.downloadCount,
+    viewCount: cert.viewCount + 1,
+    enrollmentNumber: cert.enrollment.enrollmentNumber,
+  }
+
+  if (cert.status === "REVOKED") {
+    return {
+      status: "REVOKED",
+      message: `This certificate was officially REVOKED by the evaluation board on ${certPayload.revokedAt || "a previous date"}.`,
+      certificate: certPayload,
+    }
+  }
+
+  if (cert.status === "SUSPENDED") {
+    return {
+      status: "SUSPENDED",
+      message: "This credential is currently under administrative suspension.",
+      certificate: certPayload,
+    }
+  }
+
+  return {
+    status: "VALID",
+    message: "Certificate verified. This credential matches the official evaluation ledger.",
+    certificate: certPayload,
+  }
+}
+
+/**
+ * Record a public download of a certificate
+ */
+export async function recordCertificateDownload(certificateNumber: string) {
+  const certNumber = (certificateNumber || "").trim().toUpperCase()
+  if (!certNumber) return { success: false }
+
+  try {
+    await prisma.certificate.update({
+      where: { certificateNumber: certNumber },
+      data: {
+        downloadCount: { increment: 1 },
+        lastDownloadedAt: new Date(),
+      },
+    })
+    return { success: true }
+  } catch (err) {
+    console.error("Failed to record certificate download:", err)
+    return { success: false }
+  }
+}
+

@@ -28,7 +28,7 @@ export async function loginUser(rawInput: LoginInput): Promise<AuthSuccessResult
   const user = await prisma.user.findFirst({
     where: {
       OR: [
-        { email: { equals: identifier, mode: "insensitive" } },
+        { email: { equals: identifier } },
         { phone: { equals: identifier } },
       ],
     },

@@ -311,28 +311,28 @@ export async function getStudents(rawQuery?: Partial<GetStudentsListQueryInput>)
       }
 
       if (college && college.trim() !== "") {
-        where.college = { contains: college.trim(), mode: "insensitive" }
+        where.college = { contains: college.trim() }
       }
 
       if (department && department.trim() !== "") {
-        where.department = { contains: department.trim(), mode: "insensitive" }
+        where.department = { contains: department.trim() }
       }
 
       if (search && search.trim() !== "") {
         const term = search.trim()
         where.OR = [
-          { user: { name: { contains: term, mode: "insensitive" } } },
-          { user: { email: { contains: term, mode: "insensitive" } } },
-          { user: { phone: { contains: term, mode: "insensitive" } } },
-          { college: { contains: term, mode: "insensitive" } },
-          { course: { contains: term, mode: "insensitive" } },
-          { university: { contains: term, mode: "insensitive" } },
-          { department: { contains: term, mode: "insensitive" } },
-          { subject: { contains: term, mode: "insensitive" } },
-          { registrationNumber: { contains: term, mode: "insensitive" } },
-          { parentName: { contains: term, mode: "insensitive" } },
-          { parentPhone: { contains: term, mode: "insensitive" } },
-          { city: { contains: term, mode: "insensitive" } },
+          { user: { name: { contains: term } } },
+          { user: { email: { contains: term } } },
+          { user: { phone: { contains: term } } },
+          { college: { contains: term } },
+          { course: { contains: term } },
+          { university: { contains: term } },
+          { department: { contains: term } },
+          { subject: { contains: term } },
+          { registrationNumber: { contains: term } },
+          { parentName: { contains: term } },
+          { parentPhone: { contains: term } },
+          { city: { contains: term } },
         ]
       }
 

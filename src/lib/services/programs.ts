@@ -152,8 +152,8 @@ export async function getProgramCategories(rawQuery?: Partial<GetCategoriesQuery
       if (search && search.trim() !== "") {
         const term = search.trim()
         where.OR = [
-          { name: { contains: term, mode: "insensitive" } },
-          { slug: { contains: term, mode: "insensitive" } },
+          { name: { contains: term, } },
+          { slug: { contains: term, } },
         ]
       }
 
@@ -389,10 +389,10 @@ export async function getPrograms(rawQuery?: Partial<GetProgramsListQueryInput>)
       if (search && search.trim() !== "") {
         const term = search.trim()
         where.OR = [
-          { title: { contains: term, mode: "insensitive" } },
-          { slug: { contains: term, mode: "insensitive" } },
-          { shortDescription: { contains: term, mode: "insensitive" } },
-          { category: { name: { contains: term, mode: "insensitive" } } },
+          { title: { contains: term } },
+          { slug: { contains: term } },
+          { shortDescription: { contains: term } },
+          { category: { name: { contains: term } } },
         ]
       }
 

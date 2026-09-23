@@ -192,9 +192,9 @@ export async function getUsers(rawQuery?: Partial<GetUsersQueryInput>): Promise<
       if (search && search.trim() !== "") {
         const term = search.trim()
         where.OR = [
-          { name: { contains: term, mode: "insensitive" } },
-          { email: { contains: term, mode: "insensitive" } },
-          { phone: { contains: term, mode: "insensitive" } },
+          { name: { contains: term } },
+          { email: { contains: term } },
+          { phone: { contains: term } },
         ]
       }
 

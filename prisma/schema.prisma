@@ -95,6 +95,9 @@ model User {
   assignedEnrollments      ProgramEnrollment[]  @relation("AdminAssignedEnrollments")
   payments                 PaymentTransaction[] @relation("StudentPayments")
   recordedPayments         PaymentTransaction[] @relation("AdminRecordedPayments")
+  certificates             Certificate[]        @relation("StudentCertificates")
+  issuedCertificates       Certificate[]        @relation("AdminIssuedCertificates")
+  revokedCertificates      Certificate[]        @relation("AdminRevokedCertificates")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -220,8 +223,9 @@ model Program {
   categoryId         Int
   category           ProgramCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 
-  // Enrollments Relation
+  // Enrollments & Certificates Relations
   enrollments        ProgramEnrollment[]
+  certificates       Certificate[]
 
   // Content & Overview
   shortDescription   String?             @db.Text
@@ -314,6 +318,7 @@ model ProgramEnrollment {
   certificateIssued    Boolean                  @default(false)
   certificateId        String?                  // Public QR verifiable certificate ID
   certificateIssuedAt  DateTime?
+  certificate          Certificate?
 
   // 5. Financials & Payment Audit
   paymentStatus        EnrollmentPaymentStatus  @default(FREE)
@@ -395,6 +400,84 @@ model PaymentTransaction {
   @@index([gatewayOrderId])
   @@index([gatewayPaymentId])
   @@map("payment_transactions")
+}
+
+// ==========================================
+// Certificate Issuance, Verification & Download Control
+// ==========================================
+
+enum CertificateStatus {
+  ISSUED      // Active, valid, and verifiable
+  REVOKED     // Cancelled/revoked by admin
+  SUSPENDED   // Temporarily withheld
+}
+
+model Certificate {
+  id                   Int               @id @default(autoincrement())
+  certificateNumber    String            @unique // e.g. "IC-2026-08912"
+
+  // 1. Relational Links
+  enrollmentId         Int               @unique // 1-to-1 with ProgramEnrollment
+  enrollment           ProgramEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  userId               Int               // Student User ID
+  user                 User              @relation("StudentCertificates", fields: [userId], references: [id], onDelete: Cascade)
+
+  programId            Int               // Program ID
+  program              Program           @relation(fields: [programId], references: [id], onDelete: Restrict)
+
+  issuedById           Int?              // Admin who issued/approved this certificate
+  issuedBy             User?             @relation("AdminIssuedCertificates", fields: [issuedById], references: [id], onDelete: SetNull)
+
+  // 2. Status & Download Control
+  status               CertificateStatus @default(ISSUED)
+  isDownloadAllowed    Boolean           @default(true) // Permission flag for public/student download
+
+  // 3. Dates & Validity
+  issueDate            DateTime          @default(now())
+  validUntil           DateTime?         // Nullable for lifetime validity
+
+  // 4. Academic & Completion Snapshot Details
+  grade                String?           // e.g. "A+", "A", "Distinction"
+  percentage           Float?            // Final calculated aggregate percentage
+  durationText         String?           // e.g. "6 Months (Jan 2026 - Jun 2026)"
+
+  // 5. Snapshot Data (Guarantees immutability even if user/program changes later)
+  snapshotData         Json?             // { recipientName, recipientEmail, college, degree, programTitle, programType, etc. }
+
+  // 6. Pre-rendered File / Asset Storage
+  fileUrl              String?           @db.Text
+  fileMetadata         Json?
+
+  // 7. Telemetry & Download Tracking
+  downloadCount        Int               @default(0)
+  lastDownloadedAt     DateTime?
+  viewCount            Int               @default(0)
+  lastViewedAt         DateTime?
+
+  // 8. Revocation Audit
+  revokedAt            DateTime?
+  revocationReason     String?           @db.Text
+  revokedById          Int?
+  revokedBy            User?             @relation("AdminRevokedCertificates", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  // 9. Administrative Notes & Custom Metadata
+  adminNotes           String?           @db.Text
+  metadata             Json?
+
+  // Timestamps
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  // Performance Indexes
+  @@index([certificateNumber])
+  @@index([userId])
+  @@index([programId])
+  @@index([status])
+  @@index([isDownloadAllowed])
+  @@index([issueDate])
+  @@index([createdAt])
+  @@map("certificates")
 }
 
 

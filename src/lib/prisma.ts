@@ -43,4 +43,6 @@ export type {
   PaymentMethod,
   TransactionStatus,
   TransactionType,
+  Certificate,
+  CertificateStatus,
 } from "../../generated/prisma/client"

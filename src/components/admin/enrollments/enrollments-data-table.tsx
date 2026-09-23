@@ -337,6 +337,14 @@ export function EnrollmentsDataTable({
                             </button>
                           )}
 
+                          <a
+                            href="/admin/certificates"
+                            className="w-full px-3 py-2 text-xs text-foreground hover:bg-accent flex items-center gap-2.5 transition-colors font-medium text-amber-700 dark:text-amber-400"
+                          >
+                            <Award className="w-3.5 h-3.5 text-[#d4af37]" />
+                            {item.certificateIssued ? "View Certificate" : "Issue Certificate"}
+                          </a>
+
                           <div className="my-1 border-t border-border" />
 
                           <button

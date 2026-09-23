@@ -71,13 +71,37 @@ export function VerificationForm({
           data: { certificateNumber: trimmed },
         })
         setVerificationResult(res)
+
+        if (res.status === "NOT_FOUND") {
+          toast.error("Certificate Not Found", {
+            description: `The certificate with certificate ID "${trimmed}" was not found. Please verify the identifier and try again.`,
+          })
+        } else if (res.status === "INVALID") {
+          toast.error("Invalid Certificate ID", {
+            description: res.message || "Please enter a valid certificate identifier.",
+          })
+        } else if (res.status === "REVOKED") {
+          toast.error("Certificate Revoked", {
+            description: res.message || "This certificate has been officially revoked by administration.",
+          })
+        } else if (res.certificate && !res.certificate.isDownloadAllowed) {
+          toast.error("Certificate Locked", {
+            description: "Your certificate is locked and you are not allowed to download it. Please contact administration.",
+          })
+        } else if (res.status === "VALID") {
+          toast.success("Certificate Verified", {
+            description: "Official credential verified and ready for download.",
+          })
+        }
       } catch (err: any) {
         console.error("Verification failed:", err)
+        const errorMsg = `The certificate with certificate ID "${trimmed}" was not found.`
         setVerificationResult({
           status: "NOT_FOUND",
-          message:
-            err?.message ||
-            "Unable to connect to the credential ledger. Please verify the ID or check the QR code.",
+          message: errorMsg,
+        })
+        toast.error("Certificate Not Found", {
+          description: errorMsg,
         })
       } finally {
         setIsLoading(false)
@@ -106,8 +130,8 @@ export function VerificationForm({
 
     const cert = verificationResult.certificate
     if (!cert.isDownloadAllowed) {
-      toast.error("Download Restricted", {
-        description: "Administrative hold is currently in place for downloading this certificate.",
+      toast.error("Certificate Locked", {
+        description: "Your certificate is locked and you are not allowed to download it. Please contact administration.",
       })
       return
     }
@@ -225,157 +249,149 @@ export function VerificationForm({
           {/* A. VALID STATE */}
           {verificationResult.status === "VALID" && verificationResult.certificate && (
             <div className="space-y-6">
-              {/* Status Header Banner */}
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex size-12 items-center justify-center rounded-xl bg-white text-emerald-700 border border-emerald-200 shadow-xs shrink-0">
-                    <CheckCircle2 className="size-6 text-emerald-600" />
+              {!verificationResult.certificate.isDownloadAllowed ? (
+                <div className="rounded-2xl border-2 border-amber-300 bg-amber-50/95 p-6 text-amber-950 flex items-start gap-4 shadow-sm">
+                  <div className="size-12 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0 text-amber-800">
+                    <Lock className="size-6" />
                   </div>
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-emerald-800">
-                      <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Authenticated Official Credential</span>
-                    </div>
-                    <h3 className="font-heading text-xl sm:text-2xl font-normal text-[#14233c] mt-0.5">
-                      Certificate Standing Validated & Active
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <span className="font-mono text-xs font-bold px-3 py-1.5 rounded-lg bg-white text-[#14233c] border border-emerald-200 shadow-2xs">
-                    {verificationResult.certificate.certificateNumber}
-                  </span>
-                </div>
-              </div>
-
-              {/* Action Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl border border-[#e8dfd1] bg-white shadow-xs">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {/* Download PDF Button */}
-                  <Button
-                    onClick={handleDownloadPdf}
-                    disabled={isDownloading || !verificationResult.certificate.isDownloadAllowed}
-                    className={`gap-2 h-10 px-5 text-xs font-bold shadow-xs ${
-                      verificationResult.certificate.isDownloadAllowed
-                        ? "bg-[#14233c] hover:bg-[#a07142] text-white"
-                        : "bg-slate-200 text-slate-500 cursor-not-allowed"
-                    }`}
-                  >
-                    {isDownloading ? (
-                      <>
-                        <Loader2 className="size-4 animate-spin text-[#d4af37]" />
-                        <span>Rendering PDF...</span>
-                      </>
-                    ) : verificationResult.certificate.isDownloadAllowed ? (
-                      <>
-                        <Download className="size-4 text-[#d4af37]" />
-                        <span>Download Official PDF</span>
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="size-4" />
-                        <span>Download Locked by Admin</span>
-                      </>
-                    )}
-                  </Button>
-
-                  {/* Print Button */}
-                  <Button
-                    variant="outline"
-                    onClick={handlePrint}
-                    className="gap-2 h-10 px-4 text-xs font-semibold border-[#d8cbb8] text-[#14233c] hover:bg-[#faf8f5]"
-                  >
-                    <Printer className="size-4 text-[#a07142]" />
-                    <span>Print Certificate</span>
-                  </Button>
-
-                  {/* Copy Link Button */}
-                  <Button
-                    variant="outline"
-                    onClick={handleCopyLink}
-                    className="gap-2 h-10 px-4 text-xs font-semibold border-[#d8cbb8] text-[#14233c] hover:bg-[#faf8f5]"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="size-4 text-emerald-600" />
-                        <span className="text-emerald-700">Link Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="size-4 text-[#a07142]" />
-                        <span>Copy Link</span>
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                <Link
-                  to="/verify/$certificateId"
-                  params={{ certificateId: verificationResult.certificate.certificateNumber }}
-                  className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#a07142] hover:text-[#14233c] transition-colors"
-                >
-                  <span>Direct Permalink</span>
-                  <ExternalLink className="size-3.5" />
-                </Link>
-              </div>
-
-              {/* Download Restriction Alert if not allowed */}
-              {!verificationResult.certificate.isDownloadAllowed && (
-                <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 flex items-start gap-3">
-                  <Lock className="size-4.5 text-amber-700 shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="font-bold text-sm text-amber-950">Certificate Download on Administrative Hold</h5>
-                    <p className="mt-0.5 leading-relaxed text-amber-800">
-                      While your credential verification record is authentic and confirmed in our registry, PDF
-                      download generation has been temporarily restricted by the academic administration. Please contact
-                      administration or support for clearance.
+                  <div className="space-y-1.5">
+                    <h4 className="font-heading text-xl font-bold text-amber-950">
+                      You are not allowed to download this certificate
+                    </h4>
+                    <p className="text-sm text-amber-800 leading-relaxed">
+                      Your certificate is locked. You are not allowed to download or generate the certificate. Please contact administration.
                     </p>
                   </div>
                 </div>
+              ) : (
+                <>
+                  {/* Status Header Banner */}
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex size-12 items-center justify-center rounded-xl bg-white text-emerald-700 border border-emerald-200 shadow-xs shrink-0">
+                        <CheckCircle2 className="size-6 text-emerald-600" />
+                      </div>
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-emerald-800">
+                          <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>Authenticated Official Credential</span>
+                        </div>
+                        <h3 className="font-heading text-xl sm:text-2xl font-normal text-[#14233c] mt-0.5">
+                          Certificate Standing Validated & Active
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <span className="font-mono text-xs font-bold px-3 py-1.5 rounded-lg bg-white text-[#14233c] border border-emerald-200 shadow-2xs">
+                        {verificationResult.certificate.certificateNumber}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action Toolbar */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl border border-[#e8dfd1] bg-white shadow-xs">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {/* Download PDF Button */}
+                      <Button
+                        onClick={handleDownloadPdf}
+                        disabled={isDownloading}
+                        className="gap-2 h-10 px-5 text-xs font-bold shadow-xs bg-[#14233c] hover:bg-[#a07142] text-white"
+                      >
+                        {isDownloading ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin text-[#d4af37]" />
+                            <span>Rendering PDF...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="size-4 text-[#d4af37]" />
+                            <span>Download Official PDF</span>
+                          </>
+                        )}
+                      </Button>
+
+                      {/* Print Button */}
+                      <Button
+                        variant="outline"
+                        onClick={handlePrint}
+                        className="gap-2 h-10 px-4 text-xs font-semibold border-[#d8cbb8] text-[#14233c] hover:bg-[#faf8f5]"
+                      >
+                        <Printer className="size-4 text-[#a07142]" />
+                        <span>Print Certificate</span>
+                      </Button>
+
+                      {/* Copy Link Button */}
+                      <Button
+                        variant="outline"
+                        onClick={handleCopyLink}
+                        className="gap-2 h-10 px-4 text-xs font-semibold border-[#d8cbb8] text-[#14233c] hover:bg-[#faf8f5]"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="size-4 text-emerald-600" />
+                            <span className="text-emerald-700">Link Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="size-4 text-[#a07142]" />
+                            <span>Copy Link</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <Link
+                      to="/verify/$certificateId"
+                      params={{ certificateId: verificationResult.certificate.certificateNumber }}
+                      className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#a07142] hover:text-[#14233c] transition-colors"
+                    >
+                      <span>Direct Permalink</span>
+                      <ExternalLink className="size-3.5" />
+                    </Link>
+                  </div>
+
+                  {/* MODULAR CERTIFICATE CANVAS (SEPARATE COMPONENT) */}
+                  <div className="pt-2">
+                    <div className="text-center mb-3">
+                      <span className="text-xs font-mono uppercase tracking-wider text-[#64748b]">
+                        Official Rendered Credential Document
+                      </span>
+                    </div>
+                    <ProfessionalCertificateDocument
+                      data={verificationResult.certificate as ProfessionalCertificateData}
+                    />
+                  </div>
+
+                  {/* Academic Specification Summary Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3.5 rounded-xl bg-white border border-[#e8dfd1] shadow-2xs">
+                      <span className="text-[10px] text-[#64748b] uppercase font-mono block">Recipient</span>
+                      <span className="font-bold text-[#14233c] block mt-1 truncate">
+                        {verificationResult.certificate.recipientName}
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-white border border-[#e8dfd1] shadow-2xs">
+                      <span className="text-[10px] text-[#64748b] uppercase font-mono block">Program Track</span>
+                      <span className="font-bold text-[#14233c] block mt-1 truncate">
+                        {verificationResult.certificate.programTitle}
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-white border border-[#e8dfd1] shadow-2xs">
+                      <span className="text-[10px] text-[#64748b] uppercase font-mono block">Duration</span>
+                      <span className="font-bold text-[#14233c] block mt-1">
+                        {verificationResult.certificate.durationText}
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-white border border-[#e8dfd1] shadow-2xs">
+                      <span className="text-[10px] text-[#64748b] uppercase font-mono block">Issue Date</span>
+                      <span className="font-bold text-[#14233c] block mt-1">
+                        {verificationResult.certificate.issueDate}
+                      </span>
+                    </div>
+                  </div>
+                </>
               )}
-
-              {/* ======================================================== */}
-              {/* MODULAR CERTIFICATE CANVAS (SEPARATE COMPONENT)          */}
-              {/* ======================================================== */}
-              <div className="pt-2">
-                <div className="text-center mb-3">
-                  <span className="text-xs font-mono uppercase tracking-wider text-[#64748b]">
-                    Official Rendered Credential Document
-                  </span>
-                </div>
-                <ProfessionalCertificateDocument
-                  data={verificationResult.certificate as ProfessionalCertificateData}
-                />
-              </div>
-
-              {/* Academic Specification Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3.5 rounded-xl bg-white border border-[#e8dfd1] shadow-2xs">
-                  <span className="text-[10px] text-[#64748b] uppercase font-mono block">Recipient</span>
-                  <span className="font-bold text-[#14233c] block mt-1 truncate">
-                    {verificationResult.certificate.recipientName}
-                  </span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-white border border-[#e8dfd1] shadow-2xs">
-                  <span className="text-[10px] text-[#64748b] uppercase font-mono block">Program Track</span>
-                  <span className="font-bold text-[#14233c] block mt-1 truncate">
-                    {verificationResult.certificate.programTitle}
-                  </span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-white border border-[#e8dfd1] shadow-2xs">
-                  <span className="text-[10px] text-[#64748b] uppercase font-mono block">Duration</span>
-                  <span className="font-bold text-[#14233c] block mt-1">
-                    {verificationResult.certificate.durationText}
-                  </span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-white border border-[#e8dfd1] shadow-2xs">
-                  <span className="text-[10px] text-[#64748b] uppercase font-mono block">Issue Date</span>
-                  <span className="font-bold text-[#14233c] block mt-1">
-                    {verificationResult.certificate.issueDate}
-                  </span>
-                </div>
-              </div>
             </div>
           )}
 

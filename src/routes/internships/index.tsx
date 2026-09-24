@@ -6,7 +6,19 @@ import { InternshipsCatalog } from "@/components/internships/internships-catalog
 import { InternshipsAssuranceStrip } from "@/components/internships/internships-assurance-strip"
 import { InternshipsFinalCtaSection } from "@/components/internships/internships-final-cta-section"
 
+export type InternshipsSearch = {
+  search?: string
+  category?: string
+  q?: string
+}
+
 export const Route = createFileRoute("/internships/")({
+  validateSearch: (search: Record<string, unknown>): InternshipsSearch => {
+    return {
+      search: typeof search.search === "string" ? search.search : typeof search.q === "string" ? search.q : undefined,
+      category: typeof search.category === "string" ? search.category : undefined,
+    }
+  },
   head: () => ({
     meta: createMetaTags({
       title: "Internship Directory & Cohort Opportunities",
@@ -24,6 +36,7 @@ export const Route = createFileRoute("/internships/")({
 
 function InternshipsPage() {
   const { internships } = Route.useLoaderData()
+  const searchParams = Route.useSearch()
 
   return (
     <div className="w-full flex flex-col bg-[#faf8f5]">
@@ -31,7 +44,11 @@ function InternshipsPage() {
       <InternshipsHeroSection />
 
       {/* 02. INTERACTIVE SEARCH & CATEGORY CATALOG */}
-      <InternshipsCatalog initialInternships={internships} />
+      <InternshipsCatalog
+        initialInternships={internships}
+        initialSearch={searchParams.search}
+        initialCategory={searchParams.category}
+      />
 
       {/* 03. SUPERVISED METHODOLOGY ASSURANCE STRIP */}
       <InternshipsAssuranceStrip />

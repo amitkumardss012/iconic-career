@@ -6,7 +6,19 @@ import { ProgramsCatalog } from "@/components/programs/programs-catalog"
 import { ProgramsAssuranceStrip } from "@/components/programs/programs-assurance-strip"
 import { ProgramsFinalCtaSection } from "@/components/programs/programs-final-cta-section"
 
+export type ProgramsSearch = {
+  search?: string
+  category?: string
+  q?: string
+}
+
 export const Route = createFileRoute("/programs/")({
+  validateSearch: (search: Record<string, unknown>): ProgramsSearch => {
+    return {
+      search: typeof search.search === "string" ? search.search : typeof search.q === "string" ? search.q : undefined,
+      category: typeof search.category === "string" ? search.category : undefined,
+    }
+  },
   head: () => ({
     meta: createMetaTags({
       title: "Programs Catalog | The Iconic Career",
@@ -24,6 +36,7 @@ export const Route = createFileRoute("/programs/")({
 
 function ProgramsPage() {
   const { programs } = Route.useLoaderData()
+  const searchParams = Route.useSearch()
 
   return (
     <div className="flex flex-col">
@@ -31,7 +44,11 @@ function ProgramsPage() {
       <ProgramsHeroSection />
 
       {/* 02. DISCOVERY TERMINAL & CATALOG GRID */}
-      <ProgramsCatalog initialPrograms={programs} />
+      <ProgramsCatalog
+        initialPrograms={programs}
+        initialSearch={searchParams.search}
+        initialCategory={searchParams.category}
+      />
 
       {/* 03. CURRICULUM ARCHITECTURE & ASSURANCE STRIP */}
       <ProgramsAssuranceStrip />

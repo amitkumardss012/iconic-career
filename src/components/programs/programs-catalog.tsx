@@ -15,18 +15,58 @@ import {
 
 interface ProgramsCatalogProps {
   initialPrograms: Program[]
+  initialSearch?: string
+  initialCategory?: string
 }
 
-export function ProgramsCatalog({ initialPrograms }: ProgramsCatalogProps) {
-  const [search, setSearch] = React.useState("")
-  const [category, setCategory] = React.useState<string>("all")
+export function ProgramsCatalog({
+  initialPrograms,
+  initialSearch = "",
+  initialCategory = "all",
+}: ProgramsCatalogProps) {
+  const [search, setSearch] = React.useState(initialSearch)
+  const [debouncedSearch, setDebouncedSearch] = React.useState(initialSearch)
+  const [category, setCategory] = React.useState<string>(initialCategory || "all")
+
+  React.useEffect(() => {
+    if (initialSearch !== undefined) {
+      setSearch(initialSearch)
+      setDebouncedSearch(initialSearch)
+    }
+  }, [initialSearch])
+
+  React.useEffect(() => {
+    if (initialCategory !== undefined) {
+      setCategory(initialCategory || "all")
+    }
+  }, [initialCategory])
+
+  // Debounce search input to prevent unnecessary re-filtering on rapid keystrokes
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 1000)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [search])
 
   // Extract unique categories dynamically from the loaded programs
   const availableCategories = React.useMemo(() => {
     const map = new Map<string, string>()
     initialPrograms.forEach((p) => {
-      if (p.category && p.categoryLabel) {
-        map.set(String(p.category), p.categoryLabel)
+      const slug =
+        typeof p.category === "object" && p.category !== null
+          ? (p.category as any).slug
+          : String(p.category || "").trim()
+      const label =
+        p.categoryLabel ||
+        (typeof p.category === "object" && (p.category as any).name) ||
+        slug
+
+      if (slug && label) {
+        map.set(slug, label)
       }
     })
     return [
@@ -37,21 +77,72 @@ export function ProgramsCatalog({ initialPrograms }: ProgramsCatalogProps) {
 
   const filtered = React.useMemo(() => {
     return initialPrograms.filter((prog) => {
-      const matchesCategory =
-        category === "all" || String(prog.category) === category
-      const q = search.toLowerCase().trim()
-      const matchesSearch =
-        !q ||
-        prog.name.toLowerCase().includes(q) ||
-        prog.summary.toLowerCase().includes(q) ||
-        prog.categoryLabel.toLowerCase().includes(q)
+      // 1. Category check
+      const progCategorySlug = (
+        typeof prog.category === "object" && prog.category !== null
+          ? (prog.category as any).slug || (prog.category as any).name
+          : String(prog.category || "")
+      ).toLowerCase()
+      const progCategoryLabel = (prog.categoryLabel || "").toLowerCase()
+      const selectedCat = category.toLowerCase()
 
-      return matchesCategory && matchesSearch
+      const matchesCategory =
+        selectedCat === "all" ||
+        progCategorySlug === selectedCat ||
+        progCategoryLabel === selectedCat
+
+      if (!matchesCategory) return false
+
+      // 2. Search query check
+      const q = debouncedSearch.toLowerCase().trim()
+      if (!q) return true
+
+      // Tokenize search query by spaces to support multi-keyword queries (e.g., "python backend", "react frontend")
+      const searchTerms = q.split(/\s+/).filter(Boolean)
+      if (searchTerms.length === 0) return true
+
+      // Construct comprehensive searchable text pool
+      const searchableParts: string[] = []
+      if (prog.name) searchableParts.push(prog.name)
+      if (prog.slug) searchableParts.push(prog.slug.replace(/-/g, " "))
+      if (prog.summary) searchableParts.push(prog.summary)
+      if (prog.description) searchableParts.push(prog.description)
+      if (prog.categoryLabel) searchableParts.push(prog.categoryLabel)
+      if (progCategorySlug) searchableParts.push(progCategorySlug.replace(/-/g, " "))
+
+      if (Array.isArray(prog.tags)) {
+        searchableParts.push(...prog.tags)
+      }
+      if (Array.isArray(prog.learningOutcomes)) {
+        searchableParts.push(...prog.learningOutcomes)
+      }
+      if (Array.isArray(prog.whoItsFor)) {
+        searchableParts.push(...prog.whoItsFor)
+      }
+      if (Array.isArray(prog.structure)) {
+        prog.structure.forEach((s) => {
+          if (s.title) searchableParts.push(s.title)
+          if (s.detail) searchableParts.push(s.detail)
+        })
+      }
+      if (prog.level) searchableParts.push(prog.level)
+      if (prog.deliveryMode) searchableParts.push(prog.deliveryMode)
+      if (prog.defaultDuration) searchableParts.push(prog.defaultDuration)
+      if (Array.isArray(prog.durationOptions)) {
+        searchableParts.push(...prog.durationOptions)
+      }
+      if (prog.badge) searchableParts.push(prog.badge)
+
+      const fullSearchableText = searchableParts.join(" ").toLowerCase()
+
+      // Every word in the search query must match somewhere in the course data
+      return searchTerms.every((term) => fullSearchableText.includes(term))
     })
-  }, [initialPrograms, search, category])
+  }, [initialPrograms, debouncedSearch, category])
 
   const handleReset = () => {
     setSearch("")
+    setDebouncedSearch("")
     setCategory("all")
   }
 
@@ -71,7 +162,10 @@ export function ProgramsCatalog({ initialPrograms }: ProgramsCatalogProps) {
           />
           {search && (
             <button
-              onClick={() => setSearch("")}
+              onClick={() => {
+                setSearch("")
+                setDebouncedSearch("")
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#14233c] cursor-pointer"
               aria-label="Clear search"
             >
@@ -273,12 +367,12 @@ export function ProgramsCatalog({ initialPrograms }: ProgramsCatalogProps) {
               No courses found
             </h3>
             <p className="text-xs text-[#596579] mt-1 leading-relaxed">
-              {search
-                ? `We couldn't find any courses matching your search "${search}".`
+              {debouncedSearch
+                ? `We couldn't find any courses matching your search "${debouncedSearch}".`
                 : "There are currently no courses published in the database."}
             </p>
           </div>
-          {(search || category !== "all") && (
+          {(search || debouncedSearch || category !== "all") && (
             <button
               onClick={handleReset}
               className="inline-flex items-center gap-1.5 rounded-xl bg-[#14233c] text-white px-4 py-2 text-xs font-semibold hover:bg-[#a07142] transition-colors cursor-pointer"

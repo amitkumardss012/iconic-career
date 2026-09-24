@@ -312,14 +312,14 @@ export function VerificationForm({
                       </Button>
 
                       {/* Print Button */}
-                      <Button
+                      {/* <Button
                         variant="outline"
                         onClick={handlePrint}
                         className="gap-2 h-10 px-4 text-xs font-semibold border-[#d8cbb8] text-[#14233c] hover:bg-[#faf8f5]"
                       >
                         <Printer className="size-4 text-[#a07142]" />
                         <span>Print Certificate</span>
-                      </Button>
+                      </Button> */}
 
                       {/* Copy Link Button */}
                       <Button
@@ -353,14 +353,20 @@ export function VerificationForm({
 
                   {/* MODULAR CERTIFICATE CANVAS (SEPARATE COMPONENT) */}
                   <div className="pt-2">
-                    <div className="text-center mb-3">
+                    <div className="flex items-center justify-between mb-3 px-1">
                       <span className="text-xs font-mono uppercase tracking-wider text-[#64748b]">
                         Official Rendered Credential Document
                       </span>
+                      <span className="text-[11px] font-mono text-[#a07142] block sm:hidden">
+                        ← Scroll horizontally to view full certificate →
+                      </span>
                     </div>
-                    <ProfessionalCertificateDocument
-                      data={verificationResult.certificate as ProfessionalCertificateData}
-                    />
+                    {/* Horizontal scroll viewport for mobile & smaller screens */}
+                    <div className="w-full overflow-x-auto pb-4 pt-1 rounded-2xl [-webkit-overflow-scrolling:touch]">
+                      <ProfessionalCertificateDocument
+                        data={verificationResult.certificate as ProfessionalCertificateData}
+                      />
+                    </div>
                   </div>
 
                   {/* Academic Specification Summary Cards */}

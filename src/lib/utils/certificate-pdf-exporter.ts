@@ -34,9 +34,17 @@ export async function exportCertificateToPdf({
       pixelRatio: finalPixelRatio,
       backgroundColor: "#fbf9f5",
       cacheBust: true,
+      width: 960,
+      height: 679,
+      canvasWidth: 960 * finalPixelRatio,
+      canvasHeight: 679 * finalPixelRatio,
       style: {
         transform: "none",
         margin: "0",
+        width: "960px",
+        height: "679px",
+        minWidth: "960px",
+        maxWidth: "960px",
       },
     })
 

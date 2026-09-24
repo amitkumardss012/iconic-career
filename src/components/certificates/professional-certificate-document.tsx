@@ -45,15 +45,19 @@ export const ProfessionalCertificateDocument = React.forwardRef<
     <div
       ref={ref}
       id={id}
-      className={`relative mx-auto w-full max-w-[960px] bg-[#fbf9f5] text-[#14233c] select-none shadow-2xl rounded-2xl overflow-hidden print:shadow-none print:rounded-none print:w-full print:max-w-none ${className}`}
+      className={`relative mx-auto w-[960px] min-w-[960px] max-w-[960px] h-[679px] min-h-[679px] max-h-[679px] bg-[#fbf9f5] text-[#14233c] select-none shadow-2xl rounded-2xl overflow-hidden shrink-0 print:shadow-none print:rounded-none print:w-full print:max-w-none print:h-full ${className}`}
       style={{
-        // Maintain standard landscape academic ratio (A4 approx 1.414:1)
         aspectRatio: "1.414 / 1",
-        minHeight: "560px",
+        width: "960px",
+        minWidth: "960px",
+        maxWidth: "960px",
+        height: "679px",
+        minHeight: "679px",
+        maxHeight: "679px",
       }}
     >
       {/* Outer Luxury Guilloché / Ornamental Border */}
-      <div className="absolute inset-3 sm:inset-4 rounded-xl border-[3px] border-[#a07142] p-1.5 pointer-events-none">
+      <div className="absolute inset-4 rounded-xl border-[3px] border-[#a07142] p-1.5 pointer-events-none">
         <div className="h-full w-full rounded-lg border border-[#a07142]/40 border-dashed" />
       </div>
 
@@ -72,7 +76,7 @@ export const ProfessionalCertificateDocument = React.forwardRef<
       </div>
 
       {/* Inner Certificate Content Container */}
-      <div className="relative z-10 h-full w-full flex flex-col justify-between p-7 sm:p-10 md:p-12 text-center">
+      <div className="relative z-10 h-full w-full flex flex-col justify-between p-12 text-center">
         {/* ======================================================== */}
         {/* 1. HEADER: BRANDING & CREDENTIAL TITLE */}
         {/* ======================================================== */}
@@ -82,18 +86,18 @@ export const ProfessionalCertificateDocument = React.forwardRef<
             <div className="size-7 rounded-lg bg-[#14233c] text-[#d4af37] flex items-center justify-center shadow-xs">
               <Award className="size-4" />
             </div>
-            <span className="font-heading text-lg sm:text-xl font-bold tracking-tight text-[#14233c] uppercase">
+            <span className="font-heading text-xl font-bold tracking-tight text-[#14233c] uppercase">
               The Iconic Career
             </span>
           </div>
 
-          <div className="text-[9px] sm:text-[10px] font-mono tracking-[0.28em] text-[#a07142] uppercase font-semibold">
+          <div className="text-[10px] font-mono tracking-[0.28em] text-[#a07142] uppercase font-semibold">
             Centre for Professional Excellence & Industry Internships
           </div>
 
           {/* Certificate Main Title */}
           <div className="mt-3">
-            <h1 className="font-heading text-2xl sm:text-3.5xl md:text-4xl font-normal tracking-tight text-[#14233c]">
+            <h1 className="font-heading text-4xl font-normal tracking-tight text-[#14233c]">
               {data.programType === "INTERNSHIP"
                 ? "Certificate of Internship Completion"
                 : "Certificate of Course Completion"}
@@ -105,14 +109,14 @@ export const ProfessionalCertificateDocument = React.forwardRef<
         {/* ======================================================== */}
         {/* 2. RECIPIENT BODY & NARRATIVE */}
         {/* ======================================================== */}
-        <div className="my-auto py-2 space-y-2.5 sm:space-y-3">
-          <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.2em] text-[#64748b]">
+        <div className="my-auto py-2 space-y-3">
+          <p className="text-xs font-mono uppercase tracking-[0.2em] text-[#64748b]">
             This is proudly presented to
           </p>
 
           {/* Candidate Name in Calligraphic / Serif Display */}
           <div className="inline-block relative">
-            <h2 className="font-heading text-2xl sm:text-3.5xl md:text-4xl font-medium text-[#14233c] tracking-tight px-6 pb-1">
+            <h2 className="font-heading text-4xl font-medium text-[#14233c] tracking-tight px-6 pb-1">
               {data.recipientName}
             </h2>
             <div className="h-[1.5px] w-full bg-gradient-to-r from-transparent via-[#a07142] to-transparent" />
@@ -120,14 +124,14 @@ export const ProfessionalCertificateDocument = React.forwardRef<
 
           {/* Academic Affiliation */}
           {data.college && (
-            <p className="text-xs sm:text-sm text-[#475569] font-medium max-w-lg mx-auto leading-snug">
+            <p className="text-sm text-[#475569] font-medium max-w-lg mx-auto leading-snug">
               of <span className="text-[#14233c] font-semibold">{data.college}</span>
               {data.department ? ` (${data.department})` : ""}
             </p>
           )}
 
           {/* Completion Description */}
-          <p className="text-xs sm:text-[13px] text-[#556477] max-w-2xl mx-auto leading-relaxed font-light px-4">
+          <p className="text-[13px] text-[#556477] max-w-2xl mx-auto leading-relaxed font-light px-4">
             for successfully fulfilling all rigorous curriculum requirements, practical assignments, and supervised
             project milestones in{" "}
             <span className="font-semibold text-[#14233c] font-heading underline decoration-[#a07142]/40 underline-offset-4">
@@ -160,7 +164,7 @@ export const ProfessionalCertificateDocument = React.forwardRef<
           <div className="grid grid-cols-3 items-end gap-4 text-left">
             {/* Left: Verification Seal & QR Code */}
             <div className="flex items-center gap-3">
-              <div className="size-14 sm:size-16 rounded-xl bg-white p-1 border border-[#e2dcce] shadow-xs flex items-center justify-center shrink-0">
+              <div className="size-16 rounded-xl bg-white p-1 border border-[#e2dcce] shadow-xs flex items-center justify-center shrink-0">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
                     qrVerificationUrl
@@ -175,10 +179,10 @@ export const ProfessionalCertificateDocument = React.forwardRef<
                   <ShieldCheck className="size-3" />
                   <span>Verifiable</span>
                 </div>
-                <span className="text-[10px] sm:text-[11px] font-mono font-bold text-[#14233c]">
+                <span className="text-[11px] font-mono font-bold text-[#14233c]">
                   {data.certificateNumber}
                 </span>
-                <span className="text-[9px] text-[#64748b] font-mono truncate max-w-[130px] sm:max-w-[180px]">
+                <span className="text-[9px] text-[#64748b] font-mono truncate max-w-[180px]">
                   Issued: {data.issueDate}
                 </span>
               </div>
@@ -186,9 +190,9 @@ export const ProfessionalCertificateDocument = React.forwardRef<
 
             {/* Center: Official Embossed Gold Seal */}
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="size-14 sm:size-16 rounded-full border-2 border-[#a07142] bg-gradient-to-tr from-[#f3e7d3] via-[#fdfbf7] to-[#ebd9be] flex flex-col items-center justify-center shadow-md p-1">
-                <Award className="size-5 sm:size-6 text-[#a07142]" />
-                <span className="text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-widest text-[#14233c] mt-0.5">
+              <div className="size-16 rounded-full border-2 border-[#a07142] bg-gradient-to-tr from-[#f3e7d3] via-[#fdfbf7] to-[#ebd9be] flex flex-col items-center justify-center shadow-md p-1">
+                <Award className="size-6 text-[#a07142]" />
+                <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-[#14233c] mt-0.5">
                   Official
                 </span>
               </div>
@@ -199,12 +203,12 @@ export const ProfessionalCertificateDocument = React.forwardRef<
 
             {/* Right: Academic Signatures */}
             <div className="flex flex-col items-end text-right">
-              <div className="w-36 sm:w-44 text-center">
+              <div className="w-44 text-center">
                 {/* Script Font / Signature Representation */}
-                <div className="font-heading italic text-lg sm:text-xl text-[#14233c] tracking-wide border-b border-[#14233c]/40 pb-0.5 font-serif">
+                <div className="font-heading italic text-xl text-[#14233c] tracking-wide border-b border-[#14233c]/40 pb-0.5 font-serif">
                   A. R. Mitchell
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold text-[#14233c] block mt-1 tracking-wider">
+                <span className="text-[10px] font-mono uppercase font-bold text-[#14233c] block mt-1 tracking-wider">
                   Director of Academic Programs
                 </span>
                 <span className="text-[8px] text-[#64748b] font-mono block">

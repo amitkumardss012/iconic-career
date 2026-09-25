@@ -1,4 +1,5 @@
-import { ShieldCheck, QrCode, CheckCircle2 } from "lucide-react"
+import * as React from "react"
+import { ShieldCheck, QrCode, CheckCircle2, Award } from "lucide-react"
 
 export interface ProfessionalCertificateData {
   certificateNumber: string

@@ -15,35 +15,11 @@ const navItems = [
 
 function IconicLogoMark({ className = "size-8" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 40 40"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      {/* Precision origami diamond ribbon logo matching mockup */}
-      <path
-        d="M20 4L33 12.5L20 21L7 12.5L20 4Z"
-        fill="#182d46"
-      />
-      <path
-        d="M7 12.5L20 21V36L7 27.5V12.5Z"
-        fill="#101f33"
-      />
-      <path
-        d="M33 12.5L20 21V36L33 27.5V12.5Z"
-        fill="#213a5a"
-      />
-      <path
-        d="M20 21L29 15L25.5 25.5L20 29V21Z"
-        fill="#b8864d"
-      />
-      <path
-        d="M20 21L11 15L14.5 25.5L20 29V21Z"
-        fill="#986c3b"
-      />
-      <circle cx="20" cy="21" r="2" fill="#e4b574" />
-    </svg>
+    <img
+      src="/logo/logo.png"
+      alt="The Iconic Career"
+      className={`rounded-full object-contain ${className}`}
+    />
   )
 }
 

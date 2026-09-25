@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { siteConfig } from "@/lib/site"
-import { ShieldCheckIcon, QrCodeIcon, AwardIcon } from "lucide-react"
+import { ShieldCheckIcon, QrCodeIcon } from "lucide-react"
 
 interface CertificatePreviewProps {
   studentName?: string
@@ -40,9 +40,11 @@ export function CertificatePreview({
           {/* Certificate Header with Crest */}
           <div className="flex flex-col items-center text-center border-b border-[#e8dfd1] pb-6">
             <div className="flex items-center gap-2.5 mb-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-[#14233c] text-white shadow-xs">
-                <AwardIcon className="size-5 text-[#c5a880]" />
-              </div>
+              <img
+                src="/logo/logo.png"
+                alt={siteConfig.name}
+                className="size-9 rounded-full object-contain shrink-0 shadow-xs"
+              />
               <span className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-[#14233c]">
                 {siteConfig.name}
               </span>

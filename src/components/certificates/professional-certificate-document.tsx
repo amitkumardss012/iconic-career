@@ -1,5 +1,4 @@
-import * as React from "react"
-import { Award, ShieldCheck, QrCode, CheckCircle2 } from "lucide-react"
+import { ShieldCheck, QrCode, CheckCircle2 } from "lucide-react"
 
 export interface ProfessionalCertificateData {
   certificateNumber: string
@@ -69,10 +68,14 @@ export const ProfessionalCertificateDocument = React.forwardRef<
 
       {/* Subtle Background Watermark Crest */}
       <div
-        className="absolute inset-0 flex items-center justify-center opacity-[0.035] pointer-events-none select-none"
+        className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none select-none"
         aria-hidden="true"
       >
-        <Award className="size-96 text-[#14233c]" />
+        <img
+          src="/logo/logo.png"
+          alt=""
+          className="size-96 object-contain"
+        />
       </div>
 
       {/* Inner Certificate Content Container */}
@@ -83,9 +86,11 @@ export const ProfessionalCertificateDocument = React.forwardRef<
         <div>
           {/* Organization Eyebrow */}
           <div className="flex items-center justify-center gap-2 mb-1.5">
-            <div className="size-7 rounded-lg bg-[#14233c] text-[#d4af37] flex items-center justify-center shadow-xs">
-              <Award className="size-4" />
-            </div>
+            <img
+              src="/logo/logo.png"
+              alt="The Iconic Career"
+              className="size-8 rounded-full object-contain shrink-0"
+            />
             <span className="font-heading text-xl font-bold tracking-tight text-[#14233c] uppercase">
               The Iconic Career
             </span>

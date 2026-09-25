@@ -34,9 +34,11 @@ export function MobileNav() {
         <div>
           <SheetHeader className="p-0 pb-6 border-b border-border/60 text-left">
             <SheetTitle className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-sm bg-primary text-primary-foreground font-mono text-xs font-semibold">
-                IC
-              </span>
+              <img
+                src="/logo/logo.png"
+                alt={siteConfig.name}
+                className="size-7 rounded-full object-contain shrink-0"
+              />
               <span className="font-heading text-lg font-semibold">
                 {siteConfig.name}
               </span>

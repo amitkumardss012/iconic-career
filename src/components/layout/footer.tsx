@@ -14,9 +14,11 @@ export function Footer() {
           {/* Brand Col */}
           <div className="md:col-span-4 lg:col-span-5 flex flex-col gap-4">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="flex size-8 items-center justify-center rounded-sm bg-primary text-primary-foreground font-mono text-xs font-semibold">
-                IC
-              </div>
+              <img
+                src="/logo/logo.png"
+                alt={siteConfig.name}
+                className="size-8.5 rounded-full object-contain shrink-0"
+              />
               <span className="font-heading text-xl font-semibold tracking-tight">
                 {siteConfig.name}
               </span>

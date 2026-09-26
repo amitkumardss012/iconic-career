@@ -24,7 +24,7 @@ function PrivacyPolicyPage() {
           Privacy Policy
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-2 font-mono">
-          Last Updated: March 2026 • {siteConfig.name}
+          Last Updated: March 2026 • {siteConfig.name} • CIN: {siteConfig.cin}
         </p>
       </div>
 

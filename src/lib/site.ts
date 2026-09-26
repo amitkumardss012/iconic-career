@@ -9,6 +9,7 @@ export const siteConfig = {
   phone: "+91 00000 00000",
   address: "Office address to be published",
   hours: "Monday–Friday, 10:00–18:00 IST",
+  cin: "U85306BR2026PTC088381",
   social: {
     linkedin: "https://www.linkedin.com",
     instagram: "https://www.instagram.com",

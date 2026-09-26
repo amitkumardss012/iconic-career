@@ -7,7 +7,7 @@ export const privacySections: LegalSection[] = [
   {
     title: "About this page",
     paragraphs: [
-      "This privacy notice describes the kinds of information The Iconic Career expects to handle as the public website, enrollment, payments, and student accounts come online. It is a working document and will be updated as practices are formally adopted. It is not legal advice.",
+      "This privacy notice describes the kinds of information The Iconic Career (CIN: U85306BR2026PTC088381) expects to handle as the public website, enrollment, payments, and student accounts come online. It is a working document and will be updated as practices are formally adopted. It is not legal advice.",
     ],
   },
   {
@@ -79,7 +79,7 @@ export const termsSections: LegalSection[] = [
   {
     title: "About these terms",
     paragraphs: [
-      "These terms describe how visitors should use the public website and how students should understand registration, enrollment, internships, payments, certificates, and verification. They will be updated as the platform develops. They are not a substitute for a signed agreement where one is required.",
+      "These terms describe how visitors should use the public website and how students should understand registration, enrollment, internships, payments, certificates, and verification with The Iconic Career (CIN: U85306BR2026PTC088381). They will be updated as the platform develops. They are not a substitute for a signed agreement where one is required.",
     ],
   },
   {

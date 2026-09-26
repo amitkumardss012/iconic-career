@@ -100,6 +100,23 @@ export function ContactChannelsCard() {
               </span>
             </div>
           </div>
+
+          <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-[#faf8f5] border border-[#ede7de] transition-colors hover:border-[#14233c]/30">
+            <div className="size-9 rounded-xl bg-[#f6eee3] text-[#8e653e] flex items-center justify-center shrink-0 mt-0.5">
+              <ShieldCheckIcon className="size-4" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b] font-mono block">
+                Corporate Identification Number (CIN)
+              </span>
+              <span className="text-sm font-semibold text-[#14233c] mt-0.5 block font-mono">
+                {siteConfig.cin}
+              </span>
+              <span className="text-[10.5px] text-[#7388a1] mt-0.5 block">
+                Registered Corporate Entity • Ministry of Corporate Affairs
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Social Channels Strip */}

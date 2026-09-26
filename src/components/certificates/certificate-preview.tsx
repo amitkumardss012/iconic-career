@@ -51,7 +51,7 @@ export function CertificatePreview({
             </div>
 
             <span className="text-[10px] font-mono tracking-[0.25em] text-[#a07142] font-semibold uppercase">
-              Official Credential Registry & Board of Evaluation
+              Official Credential Registry & Board of Evaluation • CIN: {siteConfig.cin}
             </span>
 
             <h4 className="font-heading text-xl sm:text-3xl font-normal text-[#14233c] mt-3">

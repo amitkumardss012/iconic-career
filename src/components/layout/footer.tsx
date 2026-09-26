@@ -142,9 +142,15 @@ export function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-border/70 py-6 text-xs text-muted-foreground">
         <div className="container-site flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <p>
-            © {currentYear} {siteConfig.name}. All rights reserved.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+            <p>
+              © {currentYear} {siteConfig.name}. All rights reserved.
+            </p>
+            <span className="hidden sm:inline text-border">•</span>
+            <p className="font-mono text-[11px] text-muted-foreground/90">
+              CIN: {siteConfig.cin}
+            </p>
+          </div>
           <div className="flex items-center gap-6">
             {footerGroups.legal.map((item) => (
               <Link

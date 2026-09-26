@@ -98,7 +98,7 @@ export const ProfessionalCertificateDocument = React.forwardRef<
           </div>
 
           <div className="text-[10px] font-mono tracking-[0.28em] text-[#a07142] uppercase font-semibold">
-            Centre for Professional Excellence & Industry Internships
+            Centre for Professional Excellence & Industry Internships • CIN: U85306BR2026PTC088381
           </div>
 
           {/* Certificate Main Title */}
